@@ -1,0 +1,104 @@
+name: Run tests
+
+on: push
+
+jobs:
+  RunTests:
+    name: Run tests
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Cuis Smalltalk
+        uses: actions/checkout@v4
+        with:
+          repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
+      - name: Checkout GUI Designer
+        uses: actions/checkout@v4
+        with:
+          path: gui-designer
+      # Setup Cuis Smalltalk
+      - name: Install Cuis Smalltalk VM
+        run: .ContinuousIntegrationScripts/installVm.sh
+      - name: Update Cuis Smalltalk
+        run: .ContinuousIntegrationScripts/installUpdates.sh
+      # Setup GUI Designer
+      - name: Download packages required by GUI Designer
+        run: ./gui-designer/bin/downloadPackages.sh Packages --exclude-development
+      # Run tests
+      - name: Copy Tools-ConsoleTestRunner package
+        run: cp gui-designer/.github/workflows/Tools-ConsoleTestRunner.pck.st Packages
+      - name: Run tests
+        run: |
+          .ContinuousIntegrationScripts/runCuis.sh \
+            -s "$GITHUB_WORKSPACE/gui-designer/bin/requireFeatures.st" GUIDesigner-Test Tools-ConsoleTestRunner \
+            -d 'ConsoleTestRunner new runTestSuite: GUIDesignerDevSupport allTestsAndChecksSuite'
+
+  RunDevelopmentTests:
+    name: Run development tests
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Cuis Smalltalk
+        uses: actions/checkout@v4
+        with:
+          repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
+      - name: Checkout GUI Designer
+        uses: actions/checkout@v4
+        with:
+          path: gui-designer
+      # Setup Cuis Smalltalk
+      - name: Install Cuis Smalltalk VM
+        run: .ContinuousIntegrationScripts/installVm.sh
+      - name: Update Cuis Smalltalk
+        run: .ContinuousIntegrationScripts/installUpdates.sh
+      # Setup GUI Designer
+      - name: Download packages required by GUI Designer
+        run: ./gui-designer/bin/downloadPackages.sh Packages
+      # Run tests
+      - name: Copy Tools-ConsoleTestRunner package
+        run: cp gui-designer/.github/workflows/Tools-ConsoleTestRunner.pck.st Packages
+      - name: Run tests
+        run: |
+          .ContinuousIntegrationScripts/runCuis.sh \
+            -s "$GITHUB_WORKSPACE/gui-designer/bin/requireFeatures.st" GUIDesigner-Development Tools-ConsoleTestRunner \
+            -d 'ConsoleTestRunner new runTestSuite: GUIDesignerDevSupport allTestsAndChecksSuite'
+
+  ReleaseDevelopmentVersion:
+    name: Publish development release (main branch only)
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [RunTests, RunDevelopmentTests]
+    steps:
+      - name: Checkout Cuis Smalltalk
+        uses: actions/checkout@v4
+        with:
+          repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
+      - name: Checkout GUI Designer
+        uses: actions/checkout@v4
+        with:
+          path: gui-designer
+      # Setup Cuis Smalltalk
+      - name: Install Cuis Smalltalk VM
+        run: .ContinuousIntegrationScripts/installVm.sh
+      - name: Update Cuis Smalltalk
+        run: .ContinuousIntegrationScripts/installUpdates.sh
+      # Setup GUI Designer
+      - name: Download packages required by GUI Designer
+        run: ./gui-designer/bin/downloadPackages.sh Packages
+      # Release Packages
+      - name: Prepare packages for release
+        run: |
+          .ContinuousIntegrationScripts/runCuis.sh \
+            -s "$GITHUB_WORKSPACE/gui-designer/bin/requireFeatures.st" GUIDesigner-Development \
+            -d "GUIDesignerReleaseProcess releaseAllPackages"
+      - name: Publish Development release packages
+        uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: development
+          name: 'Development'
+          prerelease: true
+          body: 'This development release is automatically updated every time a commit is pushed to the main branch and all tests pass.'
+          files: gui-designer/GUIDesigner*.pck.st
