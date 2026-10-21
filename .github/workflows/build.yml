@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Cuis Smalltalk
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
       - name: Checkout GUI Designer
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: gui-designer
       # Setup Cuis Smalltalk
@@ -39,11 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Cuis Smalltalk
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
       - name: Checkout GUI Designer
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: gui-designer
       # Setup Cuis Smalltalk
@@ -71,11 +71,11 @@ jobs:
     needs: [RunTests, RunDevelopmentTests]
     steps:
       - name: Checkout Cuis Smalltalk
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Cuis-Smalltalk/Cuis-Smalltalk-Dev
       - name: Checkout GUI Designer
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: gui-designer
       # Setup Cuis Smalltalk
