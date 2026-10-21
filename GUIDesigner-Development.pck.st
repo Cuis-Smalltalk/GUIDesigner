@@ -2,7 +2,6 @@
 'Description Added Out Of Package Sent Messages Closure finder button in the taskbar. For now it works only for Runtime package.'!
 !provides: 'GUIDesigner-Development' 1 11!
 !requires: 'EnclosableChars' 1 13 nil!
-!requires: 'Morphic-Widgets-Extras' 1 47 nil!
 !requires: 'CodeCoverage' 1 78 nil!
 !requires: 'ExtraRefactorings' 1 9 nil!
 !requires: 'Tools-Finder' 1 66 nil!
