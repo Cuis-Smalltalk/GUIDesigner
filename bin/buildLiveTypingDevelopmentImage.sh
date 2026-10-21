@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+BIN_FOLDER="$(cd "$(dirname "$0")" && pwd)"
 CUIS_REPOSITORY_FOLDER="Cuis-Smalltalk-Dev"
 
 # Clone the Cuis repository if it doesn't exist
@@ -24,17 +25,20 @@ cp CuisImage/Cuis?.?-????.image "$GUI_DESIGNER_IMAGE_PATH"
 cp CuisImage/Cuis?.?-????.changes "$GUI_DESIGNER_PATH_PREFIX.changes"
 
 ../bin/downloadPackages.sh Packages
+# requireFeatures.st makes the VM exit with an error when a package can not be installed,
+# so this script stops instead of leaving a half built image (the -r option of Cuis exits with 0)
 ../bin/RunCuisOnMacTerminal.sh "$GUI_DESIGNER_IMAGE_PATH" \
   -u \
-  -r GUIDesigner-Development \
-  -r LiveTyping \
-  -r ExtraRefactoringsLiveTyping \
-  -r JSON \
-  -r WebClient \
-  -r MCPServer \
-  -r MCPServerExtraRefactoring \
-  -r MCPServerLiveTyping \
-  -r MCPServerLiveTypingRefactorings \
+  -s "$BIN_FOLDER/requireFeatures.st" \
+    GUIDesigner-Development \
+    LiveTyping \
+    ExtraRefactoringsLiveTyping \
+    JSON \
+    WebClient \
+    MCPServer \
+    MCPServerExtraRefactoring \
+    MCPServerLiveTyping \
+    MCPServerLiveTypingRefactorings \
   -d "|window|
       window := Browser open.
       window model setSelectedSystemCategory: 'GUIDesigner'.
